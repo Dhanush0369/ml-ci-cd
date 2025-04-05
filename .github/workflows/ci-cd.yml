@@ -41,17 +41,17 @@ jobs:
         echo "MODEL_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
         echo "Latest model version: $LATEST_VERSION"
 
-    - name: Update model version in development.yml
+    - name: Update image version in k8s/deployment.yml
       run: |
-        echo "Updating development.yml with model version: $MODEL_VERSION"
-        sed -i "s|\(image: *${IMAGE_NAME}:\).*|\1$MODEL_VERSION|" development.yml
+        echo "Updating k8s/deployment.yml with model version: $MODEL_VERSION"
+        sed -i "s|\(image: *${IMAGE_NAME}:\).*|\1$MODEL_VERSION|" k8s/deployment.yml
 
-    - name: Commit updated development.yml
+    - name: Commit updated k8s/deployment.yml
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "github-actions@github.com"
-        git add development.yml
-        git commit -m "chore: update development.yml to model version $MODEL_VERSION" || echo "No changes to commit"
+        git add k8s/deployment.yml
+        git commit -m "chore: update model image to version $MODEL_VERSION in deployment.yml" || echo "No changes to commit"
         git push origin ${{ github.ref }}
 
 
