@@ -60,14 +60,13 @@ jobs:
           docker push $IMAGE_NAME:$MODEL_VERSION
           docker push $IMAGE_NAME:latest
 
-      # Step 7: Update deployment.yaml with new version and commit changes
       - name: Update deployment.yaml with new version
         run: |
-          sed -i "s|image: $IMAGE_NAME:.*|image: $IMAGE_NAME:$MODEL_VERSION|g" deployment.yaml
+          sed -i "s|image: $IMAGE_NAME:.*|image: $IMAGE_NAME:$MODEL_VERSION|g" k8s/deployment.yaml
 
-      # Step 8: Commit and Push Changes Using git-auto-commit Action
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Update deployment.yaml to use model version $MODEL_VERSION"
-          file_pattern: 'deployment.yaml'
+          file_pattern: 'k8s/deployment.yaml'
+
