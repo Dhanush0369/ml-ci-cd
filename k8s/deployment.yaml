@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: ml-model-container
-          image: dhanush789245/ml:v3
+          image: dhanush789245/ml:v4
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
