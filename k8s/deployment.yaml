@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: ml-model-container
-          image: dhanush789245/ml:v21
+          image: dhanush789245/ml:latest
           ports:
             - containerPort: 8000
