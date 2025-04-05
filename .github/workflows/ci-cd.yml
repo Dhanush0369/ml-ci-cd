@@ -1,4 +1,4 @@
-name: Build and Push Latest Model Image
+name: Build, Push, and Update Deployment
 
 on:
   push:
@@ -13,48 +13,52 @@ permissions:
   contents: write
   pull-requests: write
 
-
 env:
   DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKER_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
   IMAGE_NAME: dhanush789245/ml
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Log in to Docker Hub
-      run: echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+      - name: Docker Login
+        run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
-    - name: Get Latest Model Version
-      id: get_version
-      run: |
-        LATEST_VERSION=$(ls -1 models | sort -V | tail -n 1)
-        echo "Latest model version is: $LATEST_VERSION"
-        echo "MODEL_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
+      - name: Get Model Version
+        id: version
+        run: |
+          LATEST_VERSION=$(ls -1 models | sort -V | tail -n 1)
+          echo "MODEL_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
+          echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
 
-    - name: Build Docker Image
-      run: |
-        docker build \
-          --build-arg MODEL_VERSION=$MODEL_VERSION \
-          -t $IMAGE_NAME:$MODEL_VERSION \
-          -t $IMAGE_NAME:latest .
+      - name: Build and Push Image
+        run: |
+          docker build \
+            --build-arg MODEL_VERSION=$MODEL_VERSION \
+            -t $IMAGE_NAME:$MODEL_VERSION \
+            -t $IMAGE_NAME:latest .
+          docker push $IMAGE_NAME:$MODEL_VERSION
+          docker push $IMAGE_NAME:latest
 
-    - name: Push Docker Image
-      run: |
-        docker push $IMAGE_NAME:$MODEL_VERSION
-        docker push $IMAGE_NAME:latest
+      - name: Update Deployment Version
+        run: |
+          sed -i "s|image: $IMAGE_NAME:.*|image: $IMAGE_NAME:$MODEL_VERSION|g" k8s/deployment.yaml
 
-    - name: Enable auto-merge
-      if: github.event_name == 'pull_request'
-      uses: peter-evans/enable-pull-request-automerge@v3
-      with:
-        pull-request-number: ${{ github.event.pull_request.number }}
-        merge-method: squash
+      - name: Auto-Commit Deployment Change
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update deployment to model version $MODEL_VERSION"
+          file_pattern: 'k8s/deployment.yaml'
+          branch: ${{ github.head_ref || github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
