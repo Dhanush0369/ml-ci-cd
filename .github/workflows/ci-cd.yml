@@ -58,7 +58,7 @@ jobs:
         git config user.email "github-actions@github.com"
         git add k8s/deployment.yaml
         git commit -m "Update deployment to use model version $MODEL_VERSION"
-        git push
+        git push origin HEAD:main
 
     - name: Enable auto-merge
       if: github.event_name == 'pull_request'
