@@ -9,6 +9,11 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pull-requests: write
+
+
 env:
   DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKER_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
