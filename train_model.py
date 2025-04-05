@@ -9,7 +9,7 @@ X, y = iris.data, iris.target
 X_train, X_test, y_train, y_test = train_test_split(X, y)
 
 # Create versioned models
-for version in [1, 2, 3, 4]:
+for version in [1, 2, 3, 4, 5]:
     model = LogisticRegression(max_iter=200 + version*100)  # Different params for versions
     model.fit(X_train, y_train)
     joblib.dump(model, f'models/v{version}/iris_model.pkl')
