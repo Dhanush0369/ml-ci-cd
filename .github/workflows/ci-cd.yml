@@ -26,8 +26,8 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
       with:
-        persist-credentials: false 
-        fetch-depth: 0
+        persist-credentials: false # Ensure credentials are not reused
+        fetch-depth: 0 # Fetch all history for accurate versioning
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
@@ -55,26 +55,42 @@ jobs:
         docker push $IMAGE_NAME:latest
 
     - name: Update deployment.yaml with new version
-      run: |
-        sed -i "s|image: $IMAGE_NAME:.*|image: $IMAGE_NAME:$MODEL_VERSION|g" k8s/deployment.yaml
-
-    - name: Commit and Push Changes to Main Branch
       if: github.event_name == 'push'
       run: |
-        git config --global user.name "${{ github.actor }}"
-        git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-        git pull origin main --rebase # Fetch latest changes and rebase
+        sed -i "s|image: $IMAGE_NAME:.*|image: $IMAGE_NAME:$MODEL_VERSION|g" k8s/deployment.yaml
+        
+        # Stage changes immediately to avoid unstaged changes during rebase
         git add k8s/deployment.yaml
+        
+        # Configure Git user details for commit and push
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        
+        # Pull latest changes with rebase to avoid conflicts
+        git pull origin main --rebase
+        
+        # Commit and push changes to the main branch
         git commit -m "Update deployment to use model version $MODEL_VERSION"
         git push origin HEAD:main
 
-    - name: Commit and Push Changes to PR Branch
+    - name: Update deployment.yaml with new version and push to PR branch
       if: github.event_name == 'pull_request'
       run: |
-        git config --global user.name "${{ github.actor }}"
-        git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-        git checkout ${{ github.head_ref }}
-        git pull origin ${{ github.head_ref }} --rebase # Fetch latest changes and rebase
+        sed -i "s|image: $IMAGE_NAME:.*|image: $IMAGE_NAME:$MODEL_VERSION|g" k8s/deployment.yaml
+        
+        # Stage changes immediately to avoid unstaged changes during rebase
         git add k8s/deployment.yaml
+        
+        # Configure Git user details for commit and push
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        
+        # Check out the pull request branch dynamically using github.head_ref
+        git checkout ${{ github.head_ref }}
+        
+        # Pull latest changes with rebase to avoid conflicts on the PR branch
+        git pull origin ${{ github.head_ref }} --rebase
+        
+        # Commit and push changes to the pull request branch
         git commit -m "Update deployment to use model version $MODEL_VERSION"
         git push origin HEAD:${{ github.head_ref }}
