@@ -39,6 +39,21 @@ jobs:
         LATEST_VERSION=$(ls -1 models | sort -V | tail -n 1)
         echo "Latest model version is: $LATEST_VERSION"
         echo "MODEL_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
+        echo "Latest model version: $LATEST_VERSION"
+
+    - name: Update model version in development.yml
+      run: |
+        echo "Updating development.yml with model version: $MODEL_VERSION"
+        sed -i "s|\(image: *${IMAGE_NAME}:\).*|\1$MODEL_VERSION|" development.yml
+
+    - name: Commit updated development.yml
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+        git add development.yml
+        git commit -m "chore: update development.yml to model version $MODEL_VERSION" || echo "No changes to commit"
+        git push origin ${{ github.ref }}
+
 
     - name: Build Docker Image
       run: |
@@ -58,3 +73,5 @@ jobs:
       with:
         pull-request-number: ${{ github.event.pull_request.number }}
         merge-method: squash
+
+
