@@ -39,6 +39,7 @@ jobs:
         LATEST_VERSION=$(ls -1 models | sort -V | tail -n 1)
         echo "Latest model version is: $LATEST_VERSION"
         echo "MODEL_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
+        echo "Latest model version: $LATEST_VERSION"
 
     - name: Build Docker Image
       run: |
@@ -58,3 +59,14 @@ jobs:
       with:
         pull-request-number: ${{ github.event.pull_request.number }}
         merge-method: squash
+
+    - name: Update deployment.yaml with new version
+      run: |
+        sed -i "s|image: $IMAGE_NAME:.*|image: $IMAGE_NAME:$MODEL_VERSION|g" k8s/deployment.yaml
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git pull origin main --rebase  # Pull latest changes and rebase
+        git add k8s/deployment.yaml
+        git commit -m "Update deployment to use model version $MODEL_VERSION"
+        git push origin HEAD:main
+
