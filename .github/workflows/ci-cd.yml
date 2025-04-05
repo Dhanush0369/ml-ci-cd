@@ -62,3 +62,10 @@ jobs:
           branch: ${{ github.head_ref || github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge
+        uses: peter-evans/enable-pull-request-automerge@v3
+        if: github.event_name == 'pull_request'
+        with:
+          pull-request-number: ${{ github.event.pull_request.number }}
+          merge-method: squash
