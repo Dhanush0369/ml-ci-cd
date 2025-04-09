@@ -70,8 +70,8 @@ The GitHub Actions pipeline performs the following steps:
 3. **Docker Setup**: Prepares Docker Buildx for advanced builds.
 4. **Login to DockerHub**: Authenticates using secrets.
 5. **Get Model Version**: Detects the latest model version from the `models/` directory.
-6. **Build & Push Image**: Builds the Docker image using the model version and pushes both `:latest` and version-specific tags to DockerHub.
-7. **Update Kubernetes Deployment**: Updates `k8s/deployment.yaml` with the new Docker image tag.
+6. **Build & Push Image**: Builds the docker image using the model version and pushes both `:latest` and version-specific tags to DockerHub.
+7. **Update Kubernetes Deployment**: Updates `k8s/deployment.yaml` with the new Docker image tag.This allows ArgoCD to auto-sync the updated deployment in the Minikube.
 8. **Commit Deployment File Change**: Automatically commits the updated deployment file back to the repo.
 
 ---
