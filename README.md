@@ -17,7 +17,7 @@ The GitHub Actions pipeline performs the following steps:
 
 ## 🖼️ Pipeline Flow
 
-![Pipeline Flow](./images/pipeline_flow.png)
+![Pipeline Flow](./images/ci-cd.png)
 
 ## 🛠️ Secrets Required
 
@@ -28,5 +28,5 @@ Make sure the following GitHub secrets are set in your repository:
 
 ## 🐳 Docker Image Info
 
-Images are built and pushed to:
+Images are built and pushed to: https://hub.docker.com/repository/docker/dhanush789245/ml/general
 
